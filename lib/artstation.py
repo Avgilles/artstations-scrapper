@@ -7,12 +7,12 @@ import requests
 from requests.adapters import HTTPAdapter
 from urllib3.util.retry import Retry
 import os, re, time
-import utils
+from lib import utils
 
 class ArtStationAPI:
+
     threads = cpu_count() * 3
     download_chunk_size = 1048576
-    print('start')
 
     def __init__(self):
         self.session = requests.Session()
@@ -20,7 +20,6 @@ class ArtStationAPI:
         retries = Retry(total=5, backoff_factor=0.1, status_forcelist=[500, 502, 503, 504])
         self.session.mount("http://", HTTPAdapter(max_retries=retries))
         self.session.mount("https://", HTTPAdapter(max_retries=retries))
-        print('ici :',self)
 
     def request(self, method, url, **kwargs):
         if method == "GET":
@@ -47,7 +46,6 @@ class ArtStationAPI:
 
     def artist_artworks(self, artist_id, dir_path):
         artist = self.artist(artist_id)
-        print(artist)
         artworks = []
         file_names = utils.file_names(dir_path, pattern=r"-(\d+)\.(.+)$")
         with ThreadPool(self.threads) as pool:
@@ -110,6 +108,3 @@ class ArtStationAPI:
                 continue
             result.append(files)
         return utils.counter(result)
-
-
-ArtStationAPI()
