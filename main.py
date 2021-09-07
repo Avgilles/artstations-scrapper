@@ -3,18 +3,20 @@ import sys, os, time
 from lib.artstation import ArtStationAPI
 from lib.config import Config
 from lib import utils
+import json
 
 def download_artists(api, config):
     start_time = time.time()
-    result = api.save_artists(config.artists, config.save_dir)
+    result = api.save_artists(config.artists)
     duration = time.time() - start_time
-    size_mb = result["size"] / 1048576
-    print("\nSUMMARY")
-    print("---------------------------------")
+    # size_mb = result["size"] / 1048576
+    # print("\nSUMMARY")
+    # print("---------------------------------")
     print(f"time elapsed:\t{duration:.4f} seconds")
-    print(f"total size:\t{size_mb:.4f} MB")
-    print(f"total artworks:\t{result['count']} artworks")
-    print(f"download speed:\t{(size_mb / duration):.4f} MB/s")
+    print(result)
+    # print(f"total size:\t{size_mb:.4f} MB")
+    # print(f"total artworks:\t{result['count']} artworks")
+    # print(f"download speed:\t{(size_mb / duration):.4f} MB/s")
 
 def commands():
     parser = ArgumentParser()
@@ -33,18 +35,18 @@ def main():
     api = ArtStationAPI()
     config = Config(args.file)
 
-    if args.list:
-        config.print()
-    if args.save_dir:
-        config.save_dir = args.save_dir
-    if args.add:
-        config.add_artists(args.add)
-    if args.delete:
-        config.delete_artists(args.delete)
-    if args.clear:
-        config.clear_artists(args.clear)
-    if args.threads:
-        api.threads = args.threads
+    # if args.list:
+    #     config.print()
+    # if args.save_dir:
+    #     config.save_dir = args.save_dir
+    # if args.add:
+    #     config.add_artists(args.add)
+    # if args.delete:
+    #     config.delete_artists(args.delete)
+    # if args.clear:
+    #     config.clear_artists(args.clear)
+    # if args.threads:
+    #     api.threads = args.threads
     if len(sys.argv) == 1 or args.run:
         download_artists(api, config)
     config.update()
