@@ -8,11 +8,12 @@ from requests.adapters import HTTPAdapter
 from urllib3.util.retry import Retry
 import os, re, time
 from lib import utils
+import json
 
 class ArtStationAPI:
-
     threads = cpu_count() * 3
-    download_chunk_size = 1048576
+    # download_chunk_size = 1048576
+    print('start')
 
     def __init__(self):
         self.session = requests.Session()
@@ -39,15 +40,16 @@ class ArtStationAPI:
             "projects": re.findall(r"href=\"/projects/(.+?)\"", html)
         }
         return data
-    
+
     def artwork(self, artwork_id):
         res = self.request("GET", f"https://www.artstation.com/projects/{artwork_id}.json")
         return res.json()
 
-    def artist_artworks(self, artist_id, dir_path):
+    def artist_artworks(self, artist_id):
         artist = self.artist(artist_id)
+        # print(artist)
         artworks = []
-        file_names = utils.file_names(dir_path, pattern=r"-(\d+)\.(.+)$")
+        file_names = []
         with ThreadPool(self.threads) as pool:
             for artwork in pool.imap(self.artwork, artist["projects"]):
                 for a in artwork["assets"]:
@@ -60,7 +62,7 @@ class ArtStationAPI:
                 break
         return artworks
 
-    def save_artwork(self, dir_path, artwork):
+    def save_artwork(self, artwork):
         file = {
             "id": [artwork["hash_id"]],
             "title": [artwork["title"]],
@@ -76,35 +78,31 @@ class ArtStationAPI:
             file_name = unquote(file_name)
             file_name = re.sub(r"\.(.+)$", rf"-{a['id']}.\1", file_name)
             file["names"].append(file_name)
-            with open(os.path.join(dir_path, file_name), "wb") as f:
-                for chunk in res.iter_content(chunk_size=self.download_chunk_size):
-                    f.write(chunk)
-                    file["size"] += len(chunk)
-                file["count"] += 1
-            print(f"download image: {artwork['title']} ({file_name})")
+            # with open(os.path.join(dir_path, file_name), "wb") as f:
+            #     for chunk in res.iter_content(chunk_size=self.download_chunk_size):
+            #         f.write(chunk)
+            #         file["size"] += len(chunk)
+            #     file["count"] += 1
+            # print(f"download image: {artwork['title']} ({file_name})")
         return file
 
-    def save_artist(self, artist_id, dir_path):
+    def save_artist(self, artist_id):
         artist_name = self.artist(artist_id)["name"]
         print(f"download for artist {artist_name} begins\n")
-        dir_path = utils.make_dir(dir_path, artist_id)
-        artworks = self.artist_artworks(artist_id, dir_path)
+        # dir_path = utils.make_dir(dir_path, artist_id)
+        artworks = self.artist_artworks(artist_id)
         if not artworks:
             print(f"artist {artist_name} is up-to-date\n")
             return
         with ThreadPool(self.threads) as pool:
-            files = pool.map(partial(self.save_artwork, dir_path), artworks)
+            files = pool.map(partial(self.save_artwork), artworks)
         print(f"\ndownload for artist {artist_name} completed\n")
-        combined_files = utils.counter(files)
-        utils.file_mtimes(combined_files["names"], dir_path)
-        return combined_files
+        # combined_files = utils.counter(files)
+        # utils.file_mtimes(combined_files["names"])
+        return artworks
 
-    def save_artists(self, artist_ids, dir_path):
-        print(f"\nthere are {len(artist_ids)} artists\n")
-        result = []
-        for id in artist_ids:
-            files = self.save_artist(id, dir_path)
-            if not files:
-                continue
-            result.append(files)
-        return utils.counter(result)
+    def save_artists_json(self, artist):
+        result = self.save_artist(artist)
+        json_formatted_str = json.dumps(result)
+        print(json_formatted_str)
+        return json_formatted_str

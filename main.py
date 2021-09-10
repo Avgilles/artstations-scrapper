@@ -6,15 +6,17 @@ from lib import utils
 
 def download_artists(api, config):
     start_time = time.time()
-    result = api.save_artists(config.artists, config.save_dir)
+    result = api.save_artists_json("gillesavraam")
     duration = time.time() - start_time
-    size_mb = result["size"] / 1048576
-    print("\nSUMMARY")
-    print("---------------------------------")
-    print(f"time elapsed:\t{duration:.4f} seconds")
-    print(f"total size:\t{size_mb:.4f} MB")
-    print(f"total artworks:\t{result['count']} artworks")
-    print(f"download speed:\t{(size_mb / duration):.4f} MB/s")
+
+    # size_mb = result["size"] / 1048576
+    # print("\nSUMMARY")
+    # print("---------------------------------")
+    # print(f"time elapsed:\t{duration:.4f} seconds")
+    # print(f"total size:\t{size_mb:.4f} MB")
+    # print(f"total artworks:\t{result['count']} artworks")
+    # print(f"download speed:\t{(size_mb / duration):.4f} MB/s")
+    return result
 
 def commands():
     parser = ArgumentParser()
