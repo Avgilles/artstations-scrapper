@@ -43,6 +43,14 @@ class ArtStationAPI:
 
     def artwork(self, artwork_id):
         res = self.request("GET", f"https://www.artstation.com/projects/{artwork_id}.json")
+
+        json_formatted_str = json.dumps(res.json())
+
+        f = open("./api/artpages/"+res.json()["slug"]+".js", "w+")
+        f.write("export default function handler(req, res) {res.status(200).json(")
+        f.write(json_formatted_str)
+        f.write(")}")
+        f.close()
         return res.json()
 
     def artist_artworks(self, artist_id):
@@ -104,5 +112,10 @@ class ArtStationAPI:
     def save_artists_json(self, artist):
         result = self.save_artist(artist)
         json_formatted_str = json.dumps(result)
-        print(json_formatted_str)
+        # print(json_formatted_str)
+        f = open("./api/all-artstation.js", "w+")
+        f.write("export default function handler(req, res) {res.status(200).json(")
+        f.write(json_formatted_str)
+        f.write(")}")
+        f.close()
         return json_formatted_str

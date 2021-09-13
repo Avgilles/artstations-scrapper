@@ -3,6 +3,8 @@ import sys, os, time
 from lib.artstation import ArtStationAPI
 from lib.config import Config
 from lib import utils
+import schedule
+
 
 def download_artists(api, config):
     start_time = time.time()
@@ -16,7 +18,7 @@ def download_artists(api, config):
     # print(f"total size:\t{size_mb:.4f} MB")
     # print(f"total artworks:\t{result['count']} artworks")
     # print(f"download speed:\t{(size_mb / duration):.4f} MB/s")
-    return result
+
 
 def commands():
     parser = ArgumentParser()
@@ -24,11 +26,13 @@ def commands():
     parser.add_argument("-l", action="store_true", dest="list", help="list current settings")
     parser.add_argument("-s", dest="save_dir", help="set save directory path")
     parser.add_argument("-a", nargs="+", dest="add", metavar=("", "ID"), help="add artist ids")
-    parser.add_argument("-d", nargs="+", dest="delete", metavar=("all", "ID"), help="delete artist ids and their directories")
+    parser.add_argument("-d", nargs="+", dest="delete", metavar=("all", "ID"),
+                        help="delete artist ids and their directories")
     parser.add_argument("-c", nargs="+", dest="clear", metavar=("all", "ID"), help="clear artists directories")
     parser.add_argument("-t", dest="threads", type=int, help="set the number of threads")
     parser.add_argument("-r", action="store_true", dest="run", help="run program")
     return parser.parse_args()
+
 
 def main():
     args = commands()
@@ -51,5 +55,11 @@ def main():
         download_artists(api, config)
     config.update()
 
+
 if __name__ == "__main__":
     main()
+    # schedule.every(10).seconds.do(main)
+    #
+    # while True:
+    #     schedule.run_pending()
+    #     time.sleep(1)
