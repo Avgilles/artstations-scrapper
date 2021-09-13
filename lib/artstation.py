@@ -51,6 +51,7 @@ class ArtStationAPI:
         f.write(json_formatted_str)
         f.write(")}")
         f.close()
+        # print(res.json()["slug"]+":"+json_formatted_str)
         return res.json()
 
     def artist_artworks(self, artist_id):
@@ -86,12 +87,7 @@ class ArtStationAPI:
             file_name = unquote(file_name)
             file_name = re.sub(r"\.(.+)$", rf"-{a['id']}.\1", file_name)
             file["names"].append(file_name)
-            # with open(os.path.join(dir_path, file_name), "wb") as f:
-            #     for chunk in res.iter_content(chunk_size=self.download_chunk_size):
-            #         f.write(chunk)
-            #         file["size"] += len(chunk)
-            #     file["count"] += 1
-            # print(f"download image: {artwork['title']} ({file_name})")
+
         return file
 
     def save_artist(self, artist_id):
@@ -105,14 +101,12 @@ class ArtStationAPI:
         with ThreadPool(self.threads) as pool:
             files = pool.map(partial(self.save_artwork), artworks)
         print(f"\ndownload for artist {artist_name} completed\n")
-        # combined_files = utils.counter(files)
-        # utils.file_mtimes(combined_files["names"])
+
         return artworks
 
     def save_artists_json(self, artist):
         result = self.save_artist(artist)
         json_formatted_str = json.dumps(result)
-        # print(json_formatted_str)
         f = open("./api/all-artstation.js", "w+")
         f.write("export default function handler(req, res) {res.status(200).json(")
         f.write(json_formatted_str)
